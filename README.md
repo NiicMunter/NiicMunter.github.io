@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Gallery + Spoiler + Lightbox</title>
+
     <style>
         :root {
             --gallery-gap: 10px;
@@ -302,6 +309,9 @@
             .spoiler-hide svg { width: 18px; height: 18px; }
         }
     </style>
+</head>
+<body>
+
     <!-- GALLERY (exemplos) -->
     <div class="gallery">
         <div class="gallery-item"
@@ -580,7 +590,7 @@
         lightbox.addEventListener('touchend', e => {
             const dx = e.changedTouches[0].clientX - startX;
             if (dx > 50) lbPrev.click();
-            if (dx < -50) lbNext.click();
+            if (dx &lt; -50) lbNext.click();
         });
 
         // Abrir por clique/teclado (Enter/Espaço)
@@ -630,3 +640,5 @@
             if (lightbox.classList.contains('active')) fitImageToStage();
         });
     </script>
+</body>
+</html>
