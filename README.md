@@ -12,10 +12,6 @@
             --radius: 12px;
             --controls-h: 180px; /* altura para setas+thumbs+legenda */
             --ring: #3b82f6;     /* azul do foco */
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-right: env(safe-area-inset-right, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --safe-left: env(safe-area-inset-left, 0px);
         }
 
         /* ===== GALLERY ===== */
@@ -24,7 +20,6 @@
             flex-wrap: wrap;
             gap: var(--gallery-gap);
             justify-content: center;
-            padding: 16px;
         }
 
         .gallery-item {
@@ -85,8 +80,9 @@
             inset: 0;
             z-index: 3;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            align-items: center;
             text-align: center;
             color: #fff;
 
@@ -94,24 +90,15 @@
             backdrop-filter: blur(18px);
             background: radial-gradient(circle at center, rgba(0,0,0,.35), rgba(0,0,0,.75));
             border-radius: inherit;
-            transition: opacity .25s ease, visibility .25s ease;
-            padding: 16px;
+            transition: opacity .25s ease;
         }
-        .spoiler.hidden { opacity: 0; pointer-events: none; visibility: hidden; }
+        .spoiler.hidden { opacity: 0; pointer-events: none; }
 
-        .spoiler-inner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            max-width: min(90%, 640px);
-        }
+        .spoiler-icon { margin-bottom: 12px; opacity: .9; }
+        .eye-off-icon { width: 42px; height: 42px; color: #a1a1aa; opacity: .95; }
 
-        .spoiler-icon { opacity: .95; }
-        .eye-off-icon { width: 42px; height: 42px; color: #a1a1aa; }
-
-        .spoiler-title { font-size: 18px; font-weight: 700; }
-        .spoiler-sub { font-size: 14px; opacity: .9; }
+        .spoiler-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .spoiler-sub { font-size: 14px; opacity: .9; margin-bottom: 14px; max-width: 560px; }
 
         .spoiler-view {
             padding: 10px 18px;
@@ -163,8 +150,6 @@
             z-index: 9999;
         }
         .lightbox.active { display: flex; }
-        /* Evita flicker: oculta a imagem enquanto preparamos overlay/estado */
-        .lightbox.preload .lb-wrap { visibility: hidden; }
 
         .lightbox-content {
             position: relative;
@@ -175,12 +160,6 @@
             align-items: center;
             border-radius: 12px;
             overflow: hidden;
-
-            /* Margens de área segura (notch / UI do navegador mobile) */
-            padding-top: calc(var(--safe-top) + 8px);
-            padding-right: calc(var(--safe-right) + 8px);
-            padding-bottom: calc(var(--safe-bottom) + 8px);
-            padding-left: calc(var(--safe-left) + 8px);
         }
 
         .lb-stage {
@@ -200,6 +179,7 @@
             line-height: 0;
             border-radius: 8px;
             overflow: hidden; /* recorta spoiler no raio da imagem */
+            /* width/height definidas via JS (fit) */
         }
         .lb-wrap img {
             display: block;
@@ -270,8 +250,8 @@
 
         .lb-close {
             position: absolute;
-            top: calc(8px + var(--safe-top));
-            right: calc(8px + var(--safe-right));
+            top: 8px;
+            right: 8px;
             font-size: 22px;
             z-index: 12;
         }
@@ -289,21 +269,10 @@
 
         @media (max-width: 600px) {
             :root { --item-h: 180px; --controls-h: 200px; }
-
-            /* Thumbs com scroll horizontal para não empurrar a imagem */
-            .alt-strip {
-                justify-content: flex-start;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                overflow-y: hidden;
-                -webkit-overflow-scrolling: touch;
-                scrollbar-width: thin;
-            }
-            .alt-strip img { flex: 0 0 auto; height: 64px; }
-
             .spoiler-view { font-size: 15px; padding: 12px 20px; }
             .spoiler-title { font-size: 20px; }
             .spoiler-sub { font-size: 15px; }
+            .alt-strip img { height: 72px; }
             .eye-off-icon { width: 52px; height: 52px; }
             .spoiler-hide { padding: 10px 14px; font-size: 14px; }
             .spoiler-hide svg { width: 18px; height: 18px; }
@@ -364,27 +333,23 @@
     <!-- TEMPLATE: Spoiler -->
     <template id="tpl-spoiler">
         <div class="spoiler">
-            <div class="spoiler-inner">
-                <div class="spoiler-icon">
-                    <!-- Olho cortado (estilo X/Twitter) -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/>
-                        <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
-                        <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
-                        <path d="m2 2 20 20"/>
-                    </svg>
-                </div>
-                <div class="spoiler-title">Content Warning</div>
-                <div class="spoiler-sub">Sensitive Content</div>
-                <button class="spoiler-view" type="button" aria-label="Show content">
-                    <!-- Olho aberto -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="eye-on-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    Show Content
-                </button>
+            <div class="spoiler-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="eye-off-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/>
+                    <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
+                    <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
+                    <path d="m2 2 20 20"/>
+                </svg>
             </div>
+            <div class="spoiler-title">Content Warning</div>
+            <div class="spoiler-sub">Sensitive Content</div>
+            <button class="spoiler-view" type="button" aria-label="Show content">
+                <svg xmlns="http://www.w3.org/2000/svg" class="eye-on-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+                    <circle cx="12" cy="12" r="3"/>
+                </svg>
+                Show Content
+            </button>
         </div>
     </template>
 
@@ -422,8 +387,7 @@
 
         let index = 0;
         let lbAllSrcs = [];
-        let openerEl = null;
-        let trapHandler = null;
+        let lbCurrentAltIndex = 0;
 
         /* ===== Fontes ===== */
         function getSources(item) {
@@ -493,7 +457,13 @@
             if (item.dataset.spoiler === 'true') attachSpoilerLogic(item, item);
         });
 
-        /* ===== Fit: imagem cabe no stage ===== */
+        /* ===== Miniatura ativa ===== */
+        function setActiveThumb(i) {
+            const thumbs = $$('.lightbox .alt-strip img');
+            thumbs.forEach((t, idx) => t.classList.toggle('active', idx === i));
+        }
+
+        /* ===== FIT: imagem cabe no stage ===== */
         function fitImageToStage() {
             const stageW = lbStage.clientWidth;
             const stageH = lbStage.clientHeight;
@@ -518,53 +488,46 @@
             const item = items[index];
             const { full, alts } = getSources(item);
 
-            // Entra já em 'preload' para evitar flicker de spoiler
-            lightbox.classList.add('active', 'preload');
-            lightbox.setAttribute('aria-hidden', 'false');
-            document.body.style.overflow = 'hidden';
+            lbImg.src = full;
+            lbImg.alt = item.dataset.title || '';
+            lbCaption.textContent = item.dataset.title || '';
 
-            // Monta spoiler no lightbox ANTES da imagem aparecer
-            renderLightboxSpoiler(item);
-            syncSpoilerUI(item, lbWrap); // garante estado inicial correto
-
-            // Prepara thumbs
+            /* Thumbs focáveis + click/teclado */
             lbStrip.innerHTML = '';
             lbAllSrcs = [full, ...alts.filter(s => s !== full)];
+            lbCurrentAltIndex = 0;
             lbAllSrcs.forEach((src, j) => {
                 const t = document.createElement('img');
                 t.src = src;
                 t.alt = 'Alternative ' + (j + 1);
                 t.setAttribute('tabindex', '0');
                 t.addEventListener('click', e => { e.stopPropagation(); setActiveThumb(j); lbImg.src = src; });
-                t.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveThumb(j); lbImg.src = src; }});
+                t.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setActiveThumb(j); lbImg.src = src; }
+                });
                 if (j === 0) t.classList.add('active');
                 lbStrip.appendChild(t);
             });
 
-            // Seta imagem principal
-            lbImg.onload = () => {
-                fitImageToStage();
-                // Agora que está tudo pronto, libera a visibilidade
-                lightbox.classList.remove('preload');
-                // Trap de foco
-                openerEl = document.activeElement;
-                const initial = lbClose || lightbox;
-                enableFocusTrap(lightbox);
-                initial.focus();
-            };
-            lbImg.src = full;
-            lbImg.alt = item.dataset.title || '';
-            lbCaption.textContent = item.dataset.title || '';
+            renderLightboxSpoiler(item);
 
-            if (lbImg.complete && lbImg.naturalWidth) {
-                // Em alguns casos o cache dispara imediato
-                lbImg.onload();
-            }
+            /* Exibir + fit + foco inicial + trap */
+            lightbox.classList.add('active');
+            lightbox.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+
+            lbImg.onload = () => { fitImageToStage(); };
+            if (lbImg.complete) fitImageToStage();
+
+            openerEl = document.activeElement;
+            const initial = lbClose || lightbox;
+            enableFocusTrap(lightbox);
+            initial.focus();
         }
 
         function closeLightbox() {
             disableFocusTrap(lightbox);
-            lightbox.classList.remove('active', 'preload');
+            lightbox.classList.remove('active');
             lightbox.setAttribute('aria-hidden', 'true');
             document.body.style.overflow = '';
             if (openerEl && typeof openerEl.focus === 'function') openerEl.focus();
@@ -584,16 +547,16 @@
             if (e.key === 'ArrowLeft') lbPrev.click();
         });
 
-        // Swipe
+        /* Swipe */
         let startX = 0;
         lightbox.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
         lightbox.addEventListener('touchend', e => {
             const dx = e.changedTouches[0].clientX - startX;
             if (dx > 50) lbPrev.click();
-            if (dx &lt; -50) lbNext.click();
+            if (dx < -50) lbNext.click();
         });
 
-        // Abrir por clique/teclado (Enter/Espaço)
+        /* Abrir por clique/teclado (Enter/Espaço) */
         items.forEach((item, i) => {
             item.addEventListener('click', e => {
                 if (e.target.closest('.spoiler-view') || e.target.closest('.spoiler-hide')) return;
@@ -607,22 +570,21 @@
             });
         });
 
-        /* ===== Miniatura ativa ===== */
-        function setActiveThumb(i) {
-            const thumbs = $$('.lightbox .alt-strip img');
-            thumbs.forEach((t, idx) => t.classList.toggle('active', idx === i));
-        }
-
         /* ===== Trap de foco ===== */
         const FOCUS_SEL = 'button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+        let openerEl = null;
+        let trapHandler = null;
+
         function getFocusable(root) {
             return Array.from(root.querySelectorAll(FOCUS_SEL))
                 .filter(el => !el.disabled && el.offsetParent !== null);
         }
+
         function enableFocusTrap(modal) {
             const focusables = getFocusable(modal);
             if (!focusables.length) return;
             const first = focusables[0], last = focusables[focusables.length - 1];
+
             trapHandler = function(e) {
                 if (e.key !== 'Tab') return;
                 if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
@@ -630,6 +592,7 @@
             };
             modal.addEventListener('keydown', trapHandler);
         }
+
         function disableFocusTrap(modal) {
             if (trapHandler) modal.removeEventListener('keydown', trapHandler);
             trapHandler = null;
